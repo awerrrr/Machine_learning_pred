@@ -129,11 +129,11 @@ Adapun parameter utama yang saya gunakan pada tahap ini adalah:
 | **ElasticNet**        | `alpha=1.0`, `l1_ratio=0.5`                                               |
 | **XGBoost**           | `n_estimators=100`, `max_depth=3`, `learning_rate=0.1`, `random_state=42` |
 ## Evaluation
-Pada cell pertama saya lakukan visualisasi pada model yang sudah dilatih untuk melihat hasil Test R^2 dan Test RMSE pada model model tersebut.
+1. Pada cell pertama saya lakukan visualisasi pada model yang sudah dilatih untuk melihat hasil Test R^2 dan Test RMSE pada model model tersebut.
 
-Pada cell kedua saya menerapkan model yang paling bagus untuk dimasukkan pada modelling fix.
+2. Pada cell kedua saya menerapkan model yang paling bagus untuk dimasukkan pada modelling fix.
 
-Pada cell ketiga saya melakukan pengecekan ulang untuk beberapa nilai yang telah dimasukkan model terbaik. Adapun outputnya:
+3. Pada cell ketiga saya melakukan pengecekan ulang untuk beberapa nilai yang telah dimasukkan model terbaik. Adapun outputnya:
 --- Checks before creating plot_df ---
 Shape of y_test_ts: (255,)
 Shape of y_pred_test_ts: (255,)
@@ -170,21 +170,28 @@ dtype: float32
 Error: 'date' column not found in clean_df!
 Are test indices in clean_df index? True
 - Penjelasan
-| Pemeriksaan                   | Status       | Penjelasan Singkat                                                         |
-| ----------------------------- | ------------ | -------------------------------------------------------------------------- |
-| Panjang data cocok            | ✅ Ya         | Bisa diproses lebih lanjut untuk visualisasi atau evaluasi                 |
-| Tidak ada NaN                 | ✅ Tidak ada  | Aman digunakan dalam model dan visualisasi                                 |
-| Data masuk akal (head & tail) | ✅ Ya         | Nilai harga terlihat realistis                                             |
-| Cek Kolom `'price_in_idr'`    | ✅ Ada        | aman                                                                       |
-| Index cocok dengan `clean_df` | ✅ Ya         | Bisa ambil data dari `clean_df` dengan index tersebut                      |
+1. Data yang digunakan untuk evaluasi model sudah memenuhi semua syarat validitas. Panjang data prediksi dan data aktual sama, yaitu 255 baris, sehingga aman untuk dilakukan visualisasi dan evaluasi lebih lanjut.
+2. Tidak ditemukan nilai kosong (NaN) pada kedua data tersebut, baik pada nilai aktual maupun hasil prediksi.
+3. Nilai-nilai harga laptop, baik yang aktual maupun yang diprediksi, terlihat masuk akal saat dilakukan pengecekan awal (head) dan akhir (tail), sehingga tidak menunjukkan anomali mencurigakan. Selain itu, kolom target 'price_in_idr' tersedia di dalam DataFrame clean_df, artinya model dapat mengakses dan menggunakan kolom tersebut tanpa error.
+4. Terakhir, index dari data uji (X_test_ts) cocok dengan index pada clean_df, sehingga proses pengambilan data berdasarkan index berjalan dengan lancar dan valid.
 
-
-
-Dengan metric evaluasi:
+- Dengan metric evaluasi:
 | Metrik       | Fungsi                                                            |
 | ------------ | ----------------------------------------------------------------- |
 | **R² Score** | Menilai *goodness of fit* (seberapa baik model menjelaskan data)  |
 | **RMSE**     | Mengukur rata-rata besar kesalahan prediksi (dalam satuan Rupiah) |
+
+4. Pada cell terakhir
+
+![Prediksi Harga](/img/v1.png)
+| Hal yang Terlihat                              | Penjelasan                                                                        |
+| ---------------------------------------------- | --------------------------------------------------------------------------------- |
+| Pola prediksi **mirip dengan aktual**          | Artinya model XGBoost cukup berhasil menangkap tren harga laptop.                 |
+| Beberapa lonjakan besar di `Actual Price`      | Ini bisa jadi laptop dengan spesifikasi ekstrem atau harga tidak wajar.           |
+| Model masih mengalami **over/underprediction** | Kadang prediksi lebih tinggi/rendah dari aktual, terutama di puncak-puncak harga. |
+| **Fluktuasi harga cukup besar**                | Harga laptop sangat bervariasi tergantung spesifikasi.                            |
+
+
 
 ## Create Plot
 Kode ini digunakan untuk membuat sebuah DataFrame baru bernama plot_df yang berisi hasil perbandingan antara harga aktual dan harga prediksi dari model terbaik untuk keperluan visualisasi atau evaluasi lebih lanjut.
@@ -219,8 +226,8 @@ Penjelasan:
 | `Predicted Price` | `float32` | Harga prediksi dari model XGBoost, dari `y_pred_test_ts`.        |
 
 3. Pada cell terakhir analisis ini diperoleh
-![Gambar Actual vs Predict](/img/newplot.png)
 - Model bekerja cukup stabil di harga menengah (10 juta - 30 juta).
 - Model cukup baik dalam memprediksi.
 - Mayoritas titik prediksi mengikuti tren titik aktual.
 - Prediksi mendekati aktual di sebagian besar data.
+![Gambar Actual vs Predict](/img/newplot.png)
