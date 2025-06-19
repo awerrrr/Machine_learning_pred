@@ -64,7 +64,7 @@ Model ini membantu:
 
 ### Manipulasi Kolom
 #### Melakukan Rename Pada Kolom
-# masukkan gambar ss manipulasidata
+![Gambar.1](https://raw.githubusercontent.com/awerrrr/Machine_learning_pred/main/img/ss_man_ren.png)
 
 Melakukan rename pada kolom data yang akan kita analisis untuk menghasilkan data yang lebih konsisten, pythonic, dan untuk mencegah error pada analisis kedepannya dan yang terpenting adalah menghindari typo.
 - Lebih konsisten: semua nama pakai huruf kecil.
@@ -72,13 +72,13 @@ Melakukan rename pada kolom data yang akan kita analisis untuk menghasilkan data
 - Mencegah error: nama seperti ScreenResolution rentan typo, screen_resolution lebih mudah diketik dan dibaca, typo pengguna.
 
 #### Menghapus Kolom Yang Kurang Berguna
-# masukkan gambar ss manipulasi_data_hapuskolom
+![Gambar.2](https://raw.githubusercontent.com/awerrrr/Machine_learning_pred/main/img/ss_man_delkol.png)
 
 #### Mengkonversi Kolom `price_in_euros`
-# masukkan gambar ss manipulasi price
+![Gambar.3](https://raw.githubusercontent.com/awerrrr/Machine_learning_pred/main/img/ss_man_konv.png)
 
 #### Mengkonversi Tipe Data Kolom `ram` & `weight`
-# masukkan gambar ss manipulasi tipe data
+![Gambar.4](https://raw.githubusercontent.com/awerrrr/Machine_learning_pred/main/img/ss_man_tidat.png)
 
 Tujuan:
 1. Mengubah tipe data kolom ram dari string ke integer dan menghapus 'GB' pada isi data kolomnya.
@@ -105,14 +105,25 @@ dtype: int64
 Tidak ada missing value pada data yang saya pakai.
 
 #### Pengecekan Duplikat
-- Duplikasi data
-* df.duplicated().sum() *
+`df.duplicated().sum()`
 28
 Ada 28 duplikasi pada data dan akan dilakukan drop duplikasi pada data preparation.
 
+#### Melakukan review Data Understanding
+![Gambar.5](https://raw.githubusercontent.com/awerrrr/Machine_learning_pred/main/img/ss_man_des.png)
+
+✅ Kesimpulan:
+- Dataset berisi 1275 laptop.
+- Ukuran layar rata-rata sekitar 15 inci.
+- RAM rata-rata 8 GB.
+- Berat rata-rata laptop: 2.04 kg.
+- Harga laptop bervariasi, dengan rata-rata:
+    - €1134 (~Rp 19,8 juta).
+    - Harga bisa mencapai lebih dari Rp 106 juta.
+
 ## EDA
 ### Distribusi Harga Laptop (IDR)
-# masukkin visualisasi_1
+![Gambar.6](https://raw.githubusercontent.com/awerrrr/Machine_learning_pred/main/img/visual_1.png)
 
 🧾 Jenis Visualisasi:
 - Menggunakan histogram dengan Kernel Density Estimation (KDE).
@@ -125,7 +136,7 @@ Ada 28 duplikasi pada data dan akan dilakukan drop duplikasi pada data preparati
 | Ada outlier harga tinggi                  | Perlu hati-hati agar tidak bias model prediksi harga           |
 
 ### Distribusi Untuk Kolom RAM, Ukuran Layar dan Berat
-# masukkan visualisasi_2
+![Gambar.7](https://raw.githubusercontent.com/awerrrr/Machine_learning_pred/main/img/visual_2.png)
 
 ### 📊 Visualisasi Distribusi Fitur Numerik
 
@@ -172,7 +183,9 @@ Laptop yang sangat ringan atau berat merupakan kasus khusus.
 | **Berat**        | 2.0–2.5 kg             | >3.5 kg atau <1.2 kg      |
 
 ### Distribusi Untuk Kolom Produk per Merek & OS
-# masukkan visualisasi_3_1 dan 3_2.
+![Gambar.8](https://raw.githubusercontent.com/awerrrr/Machine_learning_pred/main/img/visual_3_1.png)
+
+![Gambar.9](https://raw.githubusercontent.com/awerrrr/Machine_learning_pred/main/img/visual_3_2.png)
 
 1. **Visualisasi Pertama**
 - 📊 Jenis Visualisasi:
@@ -207,7 +220,7 @@ Laptop yang sangat ringan atau berat merupakan kasus khusus.
     - macOS & Mac OS X totalnya sangat sedikit → karena hanya digunakan di produk Apple (yang jumlahnya juga sedikit dalam dataset).
     - Linux dan Chrome OS juga minim, meskipun banyak digunakan dalam bidang tertentu (developer, pendidikan).
 ### Korelasi Antar Fitur Numerik
-# masukkan visualisasi 3_3
+![Gambar.10](https://raw.githubusercontent.com/awerrrr/Machine_learning_pred/main/img/visual_3_3.png)
 
 **Visualisasi Korelasi Fitur Numerik**
 
@@ -274,7 +287,8 @@ Visualisasi ini membantu kita memahami **karakteristik umum** dari data dan meng
 ## Data Preparation
 ### Feature Engineering
 1. Membuat Data storage
-# masukkan screenshot FE_1
+![Gambar.11](https://raw.githubusercontent.com/awerrrr/Machine_learning_pred/main/img/ss_fe_1.png)
+
 🎯 Tujuan Feature Engineering Ini:
 Membuat data storage bisa dianalisis secara kuantitatif (numerik), bukan sekadar teks.
 
@@ -284,7 +298,8 @@ Memungkinkan agar dapat melakukan:
 - Memasukkan ssd, hdd, flash, hybrid sebagai fitur numerik ke model machine learning
 
 2. Mengubah Nama Kolom
-# masukkan ss FE_2
+![Gambar.12](https://raw.githubusercontent.com/awerrrr/Machine_learning_pred/main/img/ss_fe_2.png)
+
 🎯 Tujuan:
 - Mengubah teks panjang CPU dan GPU menjadi merek yang lebih ringkas dan bisa digunakan untuk kategorisasi.
 - Menyediakan angka total storage agar bisa digunakan dalam analisis numerik.
@@ -297,7 +312,7 @@ Memungkinkan agar dapat melakukan:
 - Siap untuk visualisasi, analisis statistik, atau model machine learning.
 
 3. Menghapus Kolom
-# masukkan ss FE_3
+![Gambar.13](https://raw.githubusercontent.com/awerrrr/Machine_learning_pred/main/img/ss_fe_3.png)
 
 🎯 Tujuan:
 - Kolom-kolom ini dihapus karena sudah dipecah dan disederhanakan ke dalam fitur baru yang:
@@ -306,7 +321,7 @@ Memungkinkan agar dapat melakukan:
 - Mengurangi redundansi dan kebingungan saat eksplorasi data
 
 4. Memisahkan Kolom
-# masukkan ss_fe_4
+![Gambar.14](https://raw.githubusercontent.com/awerrrr/Machine_learning_pred/main/img/ss_fe_4.png)
 
 | Komponen | Fungsi                                                     |
 | -------- | ---------------------------------------------------------- |
@@ -316,7 +331,7 @@ Memungkinkan agar dapat melakukan:
 Langkah ini adalah standar dalam supervised learning untuk memisahkan input dan output, sehingga data siap digunakan untuk pelatihan model.
 
 5. Melakukan Encoding pada Fitur Kategorikal
-# masukkan ss_fe_5
+![Gambar.15](https://raw.githubusercontent.com/awerrrr/Machine_learning_pred/main/img/ss_fe_5.png)
 
 🎯 Tujuan:
 - Kolom-kolom kategorikal diubah menjadi angka (biner)
@@ -347,7 +362,7 @@ Setelah melalui tahap data preparation, dataset kini telah:
 
 ### Standardization
 1. Melakukan Standarisasi pada Kolom Numerik
-# Masukkan ss_standar_1
+![Gambar.16](https://raw.githubusercontent.com/awerrrr/Machine_learning_pred/main/img/ss_standar_1.png)
 
 ##### 🔍 Tujuan Scaling / Standardisasi:
     - Agar semua fitur numerik memiliki skala yang seragam, yaitu:
@@ -368,7 +383,7 @@ Misalnya: fitur weight bisa punya nilai 1–4, sedangkan total_storage bisa ratu
 - IQR: Adalah perbedaan antara Kuartil Ketiga (Q3) dan Kuartil Pertama (Q1). IQR = Q3 - Q1
 
 1. Melakukan Pengecekan Outlier pada Dataset X
-# masukkan ss_iqr_1
+![Gambar.16](https://raw.githubusercontent.com/awerrrr/Machine_learning_pred/main/img/ss_iqr_1.png)
 
 ##### 📌 Pada kode cell ini dilakukan pengecekan outlier pada data X dengan teknik *IQR Outlier*.
 
@@ -380,7 +395,7 @@ Berhasil menjalankan dan menghasilkan insight berupa:
 Ini menunjukkan adanya outlier pada kolom-kolom tersebut.
 
 2. Melakukan Penghapusan Outlier pada Dataset X
-# masukkan ss_iqr_2
+![Gambar.17](https://raw.githubusercontent.com/awerrrr/Machine_learning_pred/main/img/ss_iqr_2.png)
 
 ##### 🧼 Melakukan penghapusan nilai outlier yang ada pada data X dengan menggunakan *IQR drop Outlier*.
 
@@ -392,7 +407,7 @@ After Drop Outliers
 - Outlier (weight): 0 outliers
 
 3. Melakukan Penggantian Outlier pada Dataset Y
-# masukkan ss_iqr_3
+![Gambar.17](https://raw.githubusercontent.com/awerrrr/Machine_learning_pred/main/img/ss_iqr_3.png)
 
 ##### 🧼 Melakukan penggantian nilai outlier dengan menggunakan rata-rata yang ada pada data y_clean dengan menggunakan *zscore*.
 
@@ -401,30 +416,30 @@ Hal ini berhasil dilakukan dan menghasilkan insight seperti berikut:
 - Rata-rata yang digunakan: `19358061.46`
 
 ### Missing Value
-# masukkan ss_dropmiss
+![Gambar.18](https://raw.githubusercontent.com/awerrrr/Machine_learning_pred/main/img/ss_dropmiss.png)
 
 ##### 🧼 Penanganan Data Kosong
 Untuk memastikan dataset `X` yang berisikan atribut pada laptop dan `y_clean` yang berisi `target` tidak memiliki nilai kosong yang dapat mengganggu proses training model, digunakan metode `dropna()` untuk menghapus seluruh baris yang mengandung nilai `NaN`. Ini menjamin bahwa dataset bersih dan siap digunakan untuk proses machine learning selanjutnya.
 
 ### Train, Test dan Split
 1. Melakukan Split Data pada X dan y_clean
-# masukkan ss_splt_1
+![Gambar.19](https://raw.githubusercontent.com/awerrrr/Machine_learning_pred/main/img/ss_split_1.png)
 
 ##### 🎯 Tujuan Train-Test Split:
-    - Untuk melatih model pada sebagian data (train) dan mengujinya pada data yang belum pernah dilihat (test).
-    - Membantu menilai kinerja generalisasi model, apakah model bekerja baik di data nyata yang tidak pernah dilatih sebelumnya.
+- Untuk melatih model pada sebagian data (train) dan mengujinya pada data yang belum pernah dilihat (test).
+- Membantu menilai kinerja generalisasi model, apakah model bekerja baik di data nyata yang tidak pernah dilatih sebelumnya.
 
 ---
 
 ##### 🔀 Train-Test Split
-    Dataset telah dibagi menjadi:
+Dataset telah dibagi menjadi:
     - **Training Set** (80%) sebanyak 1.020 data
     - **Testing Set** (20%) sebanyak 255 data
 ---
 Pembagian dilakukan secara acak menggunakan `train_test_split()` dari `scikit-learn`, dengan `random_state=42` untuk memastikan hasil yang konsisten. Ini memungkinkan evaluasi performa model secara adil pada data yang tidak pernah dilatih sebelumnya.
 
 2. Melakukan Visualisasi pada Split Data
-# Masukkan ss_split_2
+![Gambar.20](https://raw.githubusercontent.com/awerrrr/Machine_learning_pred/main/img/ss_split_2.png)
 
 #### 📈 Distribusi Harga Laptop pada Train dan Test Set
 
@@ -452,9 +467,9 @@ Grafik menunjukkan distribusi harga laptop untuk data latih (`Train Set`) dan da
 ---
 
 ##### 🎯 Tujuan Visualisasi Ini:
-    - **Memvalidasi pembagian data train dan test** secara acak.
-    - Memastikan bahwa model nantinya akan diuji pada data yang memiliki distribusi mirip dengan data latih.
-    - Menghindari **overfitting** atau **underfitting** akibat ketidakseimbangan distribusi antara train dan test set.
+- **Memvalidasi pembagian data train dan test** secara acak.
+- Memastikan bahwa model nantinya akan diuji pada data yang memiliki distribusi mirip dengan data latih.
+- Menghindari **overfitting** atau **underfitting** akibat ketidakseimbangan distribusi antara train dan test set.
 
 ---
 
@@ -465,7 +480,7 @@ Distribusi harga laptop pada data latih dan data uji menunjukkan kemiripan pola 
 **🚨 Karena kita akan membuat model *Predictive Modeling* `Price Laptop` yang berhubungan dengan mengetahui data perkiraan terkait apa yang mungkin terjadi pada data yang telah saya dapatkan.**
 
 1. Pelatihan Model
-# masukkan ss_model_1
+![Gambar.21](https://raw.githubusercontent.com/awerrrr/Machine_learning_pred/main/img/ss_model_1.png)
 
 ##### 🧠 Tujuan Umum
 Kode ini digunakan untuk **melatih**, **menguji**, dan **mengevaluasi kinerja model machine learning** dalam memprediksi harga laptop (`price_in_idr`).
@@ -485,7 +500,7 @@ Fungsi `evaluate_model()` penting karena:
 ---
 
 2. Pencarian Model Terbaik
-# masukkan ss_model_2
+![Gambar.22](https://raw.githubusercontent.com/awerrrr/Machine_learning_pred/main/img/ss_model_2.png)
 
 ##### 🧠 Tujuan Kode
 Kode ini bertujuan untuk **menginisialisasi beberapa model regresi** yang akan digunakan dalam proses pelatihan dan evaluasi terhadap data fitur laptop untuk memprediksi `price_in_idr`.
@@ -510,7 +525,7 @@ Kamu sedang menyiapkan berbagai jenis **model regresi dengan karakteristik yang 
 
 ### Evaluation
 1. Review Model
-# masukkan ss_model_3
+![Gambar.23](https://raw.githubusercontent.com/awerrrr/Machine_learning_pred/main/img/ss_model_3.png)
 
 ##### ✅ Tujuan Kode
 
@@ -556,7 +571,7 @@ Kode ini digunakan untuk:
 - 🧪 **Linear, Ridge, dan Lasso** masih kuat sebagai baseline, ringan dan mudah diinterpretasi.
 
 2. Pemodelan `XGBoost`
-# masukkan ss_model_4
+![Gambar.24](https://raw.githubusercontent.com/awerrrr/Machine_learning_pred/main/img/ss_model_4.png)
 
 ##### 🚀 XGBoost Regressor dengan Parameter Tuning
 Model XGBoost digunakan dengan parameter yang telah disesuaikan untuk meningkatkan performa prediksi harga laptop.
@@ -592,7 +607,8 @@ Model XGBoost digunakan dengan parameter yang telah disesuaikan untuk meningkatk
 2. RMSE berhasil ditekan dengan nilai awal sebelum tuning **5.47 juta** menjadi **5.25 juta**.
 
 3. Sanity Check
-# masukkan ss_model_5
+![Gambar.25](https://raw.githubusercontent.com/awerrrr/Machine_learning_pred/main/img/ss_model_5.png)
+
 ##### ✅ Tujuan Kode
 
 Kode ini digunakan sebagai **langkah validasi (sanity check)** sebelum membuat DataFrame `plot_df` yang akan digunakan untuk visualisasi hasil **prediksi vs. harga aktual**.  
@@ -616,7 +632,7 @@ Semua pengecekan telah **lolos**, sehingga:
 > 💡 Artinya, data siap digunakan untuk membuat visualisasi hasil prediksi harga laptop secara akurat.
 
 4. Visualisasi Prediksi Harga Laptop
-# masukkan ss_model_6
+![Gambar.26](https://raw.githubusercontent.com/awerrrr/Machine_learning_pred/main/img/ss_model_6.png)
 
 ### 📈 Grafik: Prediksi Harga Laptop vs Nilai Aktual (Test Set)
 
@@ -659,7 +675,7 @@ Grafik ini menunjukkan bahwa **model XGBoost cukup efektif dalam memprediksi har
 
 ## Create Plot
 1. Membuat `plot_df`
-# masukkan ss_cp_1
+![Gambar.27](https://raw.githubusercontent.com/awerrrr/Machine_learning_pred/main/img/ss_cp_1.png)
 
 ##### ✅ Tujuan Kode
 Kode ini digunakan untuk **menyiapkan DataFrame baru (`plot_df`)** yang berisi:
@@ -700,7 +716,7 @@ Data `plot_df` ini **sudah siap digunakan** untuk:
 - Meningkatkan **interpretabilitas hasil model** secara visual.
 
 2. Memahami `plot_df`
-# masukkan ss_cp_2
+![Gambar.28](https://raw.githubusercontent.com/awerrrr/Machine_learning_pred/main/img/ss_cp_2.png)
 
 ##### 🧾 Rincian:
 
@@ -714,7 +730,7 @@ Data `plot_df` ini **sudah siap digunakan** untuk:
 
 
 3. Visualisasi Laptop Price Predicted
-# masukkan ss_cp_3
+![Gambar.29](https://raw.githubusercontent.com/awerrrr/Machine_learning_pred/main/img/ss_cp_3.png)
 
 ##### 🔧 Kode Visualisasi:
 Visualisasi ini dibuat menggunakan plotly.graph_objects.
