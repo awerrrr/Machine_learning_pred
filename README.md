@@ -502,17 +502,19 @@ Fungsi `evaluate_model()` penting karena:
 2. Pencarian Model Terbaik
 ![Gambar.22](https://raw.githubusercontent.com/awerrrr/Machine_learning_pred/main/img/ss_model_2.png)
 
-##### 🧠 Tujuan Kode
+##### 🎯 Tujuan Kode
 Kode ini bertujuan untuk **menginisialisasi beberapa model regresi** yang akan digunakan dalam proses pelatihan dan evaluasi terhadap data fitur laptop untuk memprediksi `price_in_idr`.
 
 ---
+###### 🧠 Penjelasan Singkat Setiap Model
 
-| Model               | Penjelasan Singkat                                                                 |
-|---------------------|------------------------------------------------------------------------------------|
-| `LinearRegression()` | Regresi linear biasa, digunakan sebagai baseline.                                 |
-| `Ridge()`            | Regresi linear dengan regularisasi **L2**, menghindari overfitting.               |
-| `Lasso()`            | Regresi linear dengan regularisasi **L1**, bisa menyusutkan beberapa koefisien ke nol (fitur seleksi). |
-| `ElasticNet()`       | Kombinasi dari Lasso dan Ridge (menggabungkan penalti **L1** dan **L2**).         |
+| Model                        | Penjelasan                                                                 |
+|-----------------------------|----------------------------------------------------------------------------|
+| `LinearRegression()`         | Regresi linear biasa, digunakan sebagai baseline. Mengasumsikan hubungan linier antara fitur dan target. Tidak memiliki regularisasi, sehingga rentan terhadap overfitting jika data memiliki banyak fitur atau terjadi multikolinearitas. |
+| `RidgeRegression()`          | Regresi linear dengan menambahkan regularisasi **L2** (penalty = α × Σ koefisien²) yang menyusutkan koefisien besar dan membuat model lebih stabil. Dalam model ini, α ditetapkan pada nilai moderat (misalnya `alpha=1.0`) untuk menyeimbangkan bias dan varians. |
+| `LassoRegression()`          | Menggunakan regularisasi **L1**, yang tidak hanya menyusutkan koefisien tetapi juga dapat menghilangkan fitur tidak penting. Cocok jika ingin menghasilkan model yang lebih sederhana. Dalam pengujian ini, nilai `alpha` diatur menggunakan grid search dan memberikan kinerja serupa dengan Ridge. |
+| `ElasticNet()`               | Menggabungkan penalti **L1 dan L2** (dengan parameter `l1_ratio`). Namun, kombinasi ini tidak cocok untuk data ini, kemungkinan karena penalti ganda tidak memberikan keuntungan tambahan dibanding regularisasi tunggal. |
+| `XGBoost (Extreme Gradient Boosting)` | Algoritma boosting berbasis pohon keputusan. Model dibangun secara iteratif, di mana setiap model baru mencoba memperbaiki kesalahan model sebelumnya. Hyperparameter penting yang digunakan: `n_estimators = 100` (jumlah pohon boosting), `learning_rate = 0.1` (ukuran langkah), `max_depth = 6` (kompleksitas pohon), dan `subsample = 0.8` (untuk mencegah overfitting dengan subset data acak). |
 
 ---
 
@@ -540,13 +542,13 @@ Kode ini digunakan untuk:
 
 ##### 🧪 Hasil Evaluasi Model
 
-| Model               | R² Score | RMSE (Rp)      | Interpretasi                                                                 |
-|---------------------|----------|----------------|------------------------------------------------------------------------------|
-| Linear Regression    | 0.65     | 6.38 juta       | Baseline yang cukup baik. Model linear mampu menjelaskan 74% varians harga. |
-| Ridge Regression     | 0.65     | 6.38 juta       | Sedikit lebih baik, regularisasi L2 membantu menghindari overfitting.       |
-| Lasso Regression     | 0.65     | 6.38 juta       | Mirip Linear, tetapi dengan penalti L1 yang juga bisa melakukan seleksi fitur. |
-| ElasticNet Regression| 0.47     | 7.81 juta       | Performa kurang baik, penalti gabungan L1 dan L2 kurang cocok di sini.      |
-| XGBoost Regressor    | **0.74** | **5.47 juta**   | ✅ Model terbaik. Menangkap hubungan non-linear dan hasil prediksi paling akurat. |
+| Model                  | R² Score | RMSE (Rp)   | Interpretasi                                                                                                                                                      | Kelebihan                                                                                                                                     | Kekurangan                                                                                                                       |
+|------------------------|----------|-------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
+| Linear Regression       | 0.65     | 6.38 juta    | Baseline yang cukup baik. Model linear mampu menjelaskan 65% varians harga.                                                                                      | - Mudah diinterpretasikan<br>- Cepat dilatih dan dievaluasi<br>- Cocok untuk hubungan linier sederhana                                       | - Tidak menangani hubungan non-linear<br>- Rentan terhadap outlier dan multikolinearitas                                        |
+| Ridge Regression        | 0.65     | 6.38 juta    | Menambahkan penalti L2 untuk membatasi koefisien besar dan meningkatkan stabilitas model. Cocok untuk mengurangi multikolinearitas.                             | - Mengurangi overfitting<br>- Menstabilkan model saat terjadi multikolinearitas                                                              | - Tidak melakukan seleksi fitur<br>- Masih lemah jika data memiliki pola non-linear                                              |
+| Lasso Regression        | 0.65     | 6.38 juta    | Menggunakan penalti L1 yang tidak hanya mencegah overfitting, tetapi juga melakukan seleksi fitur dengan mengecilkan koefisien tidak penting menjadi nol.       | - Dapat melakukan seleksi fitur otomatis<br>- Mengurangi kompleksitas model                                                                 | - Bisa menghilangkan fitur penting jika tidak dituning dengan baik<br>- Performa serupa dengan Ridge jika fitur relevan semua    |
+| ElasticNet Regression   | 0.47     | 7.81 juta    | Menggabungkan penalti L1 dan L2. Namun dalam kasus ini, kombinasi penalti tidak menghasilkan performa optimal.                                                  | - Kombinasi fleksibel antara Ridge dan Lasso<br>- Dapat digunakan saat jumlah fitur lebih banyak dari jumlah observasi                        | - Butuh tuning dua hyperparameter (`alpha`, `l1_ratio`)<br>- Performa lebih buruk jika kombinasi penalti tidak tepat             |
+| XGBoost Regressor       | **0.74** | **5.47 juta** | ✅ Model terbaik. Menggunakan pendekatan boosting gradien, XGBoost membangun model secara bertahap dan mengoptimalkan fungsi loss. Sangat baik untuk data kompleks dan non-linear. | - Akurasi tinggi<br>- Menangani hubungan non-linear<br>- Tahan terhadap outlier<br>- Mendukung fitur penting seperti missing value handling | - Komputasi relatif lebih berat<br>- Butuh tuning hyperparameter yang lebih banyak dan sensitif terhadap konfigurasi awal        |
 
 ---
 
