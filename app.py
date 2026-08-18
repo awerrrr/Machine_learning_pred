@@ -3,123 +3,157 @@ from pathlib import Path
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.compose import ColumnTransformer
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.impute import SimpleImputer
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+
 
 APP_DIR = Path(__file__).resolve().parent
-DATA_DIR = APP_DIR / "data"
-MOVIES_FILE = DATA_DIR / "movies.csv"
-RATINGS_FILE = DATA_DIR / "ratings.csv"
-
-st.set_page_config(page_title="Film Recommendation", page_icon="🎬", layout="wide")
-st.title("Film Recommendation")
-st.caption("Interactive Streamlit version of the film recommender project.")
+DATA_FILE = APP_DIR / "data" / "laptop_data.csv"
 
 
-@st.cache_data
-def load_data():
-    if not MOVIES_FILE.exists() or not RATINGS_FILE.exists():
-        return None, None
-    movies = pd.read_csv(MOVIES_FILE)
-    ratings = pd.read_csv(RATINGS_FILE)
-    movies["genres_clean"] = movies["genres"].str.replace("|", " ", regex=False)
-    return movies, ratings
+def one_hot():
+    try:
+        return OneHotEncoder(handle_unknown="ignore", sparse_output=False)
+    except TypeError:
+        return OneHotEncoder(handle_unknown="ignore", sparse=False)
 
 
-@st.cache_data
-def compute_similarity_matrix(genres_series: pd.Series):
-    tfidf = TfidfVectorizer(stop_words="english")
-    tfidf_matrix = tfidf.fit_transform(genres_series)
-    return cosine_similarity(tfidf_matrix)
+st.set_page_config(page_title="Laptop Price Predict", page_icon="💻", layout="wide")
+st.title("Laptop Price Predict")
+st.caption("Interactive Streamlit version of the laptop regression project.")
 
-
-@st.cache_data
-def compute_rating_stats(ratings_df: pd.DataFrame, movies_df: pd.DataFrame):
-    return (
-        ratings_df.merge(movies_df, on="movieId", how="left")
-        .groupby("title")
-        .agg(avg_rating=("rating", "mean"), rating_count=("rating", "size"))
-        .reset_index()
-    )
-
-
-movies, ratings = load_data()
-
-if movies is None or ratings is None:
-    st.warning("Place `movies.csv` and `ratings.csv` inside `data/`.")
+if not DATA_FILE.exists():
+    st.warning("Dataset not found. Place `laptop_data.csv` inside `data/`.")
     st.stop()
 
-# Sidebar Form untuk Filter
-genre_list = sorted({g for s in movies["genres"].dropna() for g in s.split("|")})
+df = pd.read_csv(DATA_FILE, encoding="ISO-8859-1")
+df = df.rename(
+    columns={
+        "laptop_ID": "laptop_id",
+        "Company": "company",
+        "Product": "product",
+        "TypeName": "type_name",
+        "Inches": "inches",
+        "ScreenResolution": "screen_resolution",
+        "Cpu": "cpu",
+        "Ram": "ram",
+        "Memory": "memory",
+        "Gpu": "gpu",
+        "OpSys": "opsys",
+        "Weight": "weight",
+        "Price_in_euros": "price_in_euros",
+    }
+)
+df["price_in_idr"] = df["price_in_euros"] * 17500
+df["ram_gb"] = df["ram"].str.replace("GB", "", regex=False).astype(int)
+df["weight_kg"] = df["weight"].str.replace("kg", "", regex=False).astype(float)
+df = df.drop_duplicates().copy()
 
-with st.sidebar.form("filter_form"):
-    st.header("Filters")
-    genre_filter = st.multiselect("Genres", genre_list, default=genre_list[:8])
-    min_ratings = st.slider("Min ratings per movie", 1, 500, 50)
-    submit_filters = st.form_submit_button("Apply Filters")
+st.sidebar.header("Filters")
+company_filter = st.sidebar.multiselect(
+    "Company",
+    sorted(df["company"].unique()),
+    default=sorted(df["company"].unique())[:6],
+)
+opsys_filter = st.sidebar.multiselect(
+    "OS",
+    sorted(df["opsys"].unique()),
+    default=sorted(df["opsys"].unique()),
+)
+min_ram, max_ram = int(df["ram_gb"].min()), int(df["ram_gb"].max())
+ram_range = st.sidebar.slider("RAM (GB)", min_ram, max_ram, (min_ram, max_ram))
 
-movie_genres = movies.assign(genres_split=movies["genres"].str.split("|")).explode("genres_split")
-
-# Multi-select fallback jika kosong
-if not genre_filter:
-    genre_filter = genre_list
-
-filtered_movies = movies[
-    movies["genres"].fillna("").apply(lambda x: any(g in x.split("|") for g in genre_filter))
+filtered = df[
+    df["company"].isin(company_filter)
+    & df["opsys"].isin(opsys_filter)
+    & df["ram_gb"].between(ram_range[0], ram_range[1])
 ].copy()
 
-col1, col2 = st.columns(2)
-col1.metric("Total Movies", f"{len(movies):,}".replace(",", "."))
-col2.metric("Total Ratings", f"{len(ratings):,}".replace(",", "."))
+col1, col2, col3, col4 = st.columns(4)
+col1.metric("Rows", f"{len(filtered):,}".replace(",", "."))
+col2.metric("Median Price", f"Rp{filtered['price_in_idr'].median():,.0f}".replace(",", "."))
+col3.metric("Avg RAM", f"{filtered['ram_gb'].mean():.1f} GB")
+col4.metric("Top Brand", filtered["company"].mode().iat[0] if not filtered.empty else "-")
 
-tab_overview, tab_reco, tab_data = st.tabs(["Overview", "Recommend", "Data"])
-
-# Pre-compute similarity matriks satu kali via cache
-sim_matrix = compute_similarity_matrix(movies["genres_clean"])
+tab_overview, tab_model, tab_data = st.tabs(["Overview", "Model", "Data"])
 
 with tab_overview:
     left, right = st.columns(2)
     with left:
-        genre_counts = (
-            movie_genres[movie_genres["genres_split"].isin(genre_filter)]["genres_split"]
-            .value_counts()
-            .head(10)
-            .reset_index()
+        fig = px.histogram(
+            filtered,
+            x="price_in_idr",
+            nbins=40,
+            title="Price Distribution",
+            color_discrete_sequence=["#e8a33d"],
         )
-        genre_counts.columns = ["genre", "count"]
-        fig_genre = px.bar(genre_counts, x="count", y="genre", orientation="h", title="Top Filtered Genres")
-        fig_genre.update_layout(yaxis={"categoryorder": "total ascending"})
-        st.plotly_chart(fig_genre, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True)
     with right:
-        rating_counts = ratings["rating"].value_counts().sort_index().reset_index()
-        rating_counts.columns = ["rating", "count"]
-        fig_rating = px.bar(rating_counts, x="rating", y="count", title="Rating Distribution")
-        st.plotly_chart(fig_rating, use_container_width=True)
+        top_brands = filtered["company"].value_counts().head(10).reset_index()
+        top_brands.columns = ["company", "count"]
+        fig = px.bar(
+            top_brands,
+            x="count",
+            y="company",
+            orientation="h",
+            title="Top Brands",
+        )
+        st.plotly_chart(fig, use_container_width=True)
 
-with tab_reco:
-    st.subheader("🎬 Movie Recommender")
+    st.subheader("Quick insight")
+    st.write(
+        "Harga laptop di project ini cenderung right-skewed, sehingga model tree-based cocok sebagai baseline."
+    )
 
-    with st.form("recommendation_form"):
-        title = st.selectbox("Pick an anchor movie", movies["title"].sort_values().tolist())
-        top_n = st.slider("Top N recommendations", 3, 10, 5)
-        submit_reco = st.form_submit_button("Get Recommendations")
+with tab_model:
+    model_df = filtered[["company", "type_name", "opsys", "inches", "ram_gb", "weight_kg", "price_in_idr"]].copy()
+    X = model_df.drop(columns=["price_in_idr"])
+    y = model_df["price_in_idr"]
+    if len(model_df) < 20:
+        st.info("Need at least 20 rows after filtering to train a quick benchmark.")
+    else:
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        pipeline = Pipeline(
+            [
+                (
+                    "prep",
+                    ColumnTransformer(
+                        [
+                            ("cat", one_hot(), ["company", "type_name", "opsys"]),
+                            (
+                                "num",
+                                Pipeline(
+                                    [("imputer", SimpleImputer(strategy="median")), ("scale", StandardScaler())]
+                                ),
+                                ["inches", "ram_gb", "weight_kg"],
+                            ),
+                        ]
+                    ),
+                ),
+                ("model", RandomForestRegressor(n_estimators=200, random_state=42, n_jobs=-1)),
+            ]
+        )
+        pipeline.fit(X_train, y_train)
+        preds = pipeline.predict(X_test)
+        rmse = mean_squared_error(y_test, preds) ** 0.5
 
-    # Ambil matriks similarity dari cache secara instant
-    idx = movies.index[movies["title"] == title][0]
-    scores = list(enumerate(sim_matrix[idx]))
-    scores = sorted(scores, key=lambda x: x[1], reverse=True)[1 : top_n + 1]
-    rec = movies.iloc[[i for i, _ in scores]][["title", "genres"]].copy()
-    rec["similarity"] = [round(s, 3) for _, s in scores]
+        c1, c2, c3 = st.columns(3)
+        c1.metric("R²", f"{r2_score(y_test, preds):.3f}")
+        c2.metric("MAE", f"Rp{mean_absolute_error(y_test, preds):,.0f}".replace(",", "."))
+        c3.metric("RMSE", f"Rp{rmse:,.0f}".replace(",", "."))
 
-    st.markdown("### Recommendation Results")
-    st.dataframe(rec, use_container_width=True)
-    st.caption("Similarity is calculated using genre TF-IDF + cosine similarity (cached for instant performance).")
+        fig = px.scatter(
+            x=y_test,
+            y=preds,
+            labels={"x": "Actual", "y": "Predicted"},
+            title="Actual vs Predicted",
+        )
+        st.plotly_chart(fig, use_container_width=True)
 
 with tab_data:
-    st.subheader("Filtered Movie Statistics")
-    movie_rating_stats = compute_rating_stats(ratings, movies)
-    movie_rating_stats = movie_rating_stats[movie_rating_stats["rating_count"] >= min_ratings]
-    movie_rating_stats = movie_rating_stats.sort_values(
-        ["avg_rating", "rating_count"], ascending=[False, False]
-    ).head(250)
-    st.dataframe(movie_rating_stats, use_container_width=True)
+    st.dataframe(filtered.head(200), use_container_width=True)
