@@ -362,7 +362,7 @@ def build_feature_matrix(feature_df: pd.DataFrame):
 # ============================================================
 # MODEL — exact tuned configuration from latest notebook
 # ============================================================
-@st.cache_resource(show_spinner="Melatih XGBoost berdasarkan pipeline notebook terbaru...")
+@st.cache_resource(show_spinner="XGBoost regression model trained with a feature-engineered pipeline for laptop price estimation.")
 def train_model(df: pd.DataFrame):
     if not XGBOOST_AVAILABLE:
         raise RuntimeError(XGBOOST_ERROR)
